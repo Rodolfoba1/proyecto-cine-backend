@@ -11,9 +11,4 @@ router.post("/registro", registrarUsuario);
 // Ruta para registro de admin (protegida por el middleware)
 router.post("/registro-admin", verificarToken, registrarUsuario);
 
-// Ruta de perfil (protegida por el middleware)
-router.get("/perfil", verificarToken, (req, res) => {
-    res.json({ mensaje: "Acceso autorizado", usuario: req.usuario });
-});
-
 module.exports = router;
