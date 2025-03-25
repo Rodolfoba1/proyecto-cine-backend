@@ -1,18 +1,3 @@
-# Dependencias de Node.js
 node_modules/
-npm-debug.log
-yarn-error.log
-
-# Configuración del entorno
 .env
-
-# Archivos de salida
-dist/
-build/
-logs/
-*.log
-
-# Configuración de IDEs y sistemas operativos
-.vscode/
 .DS_Store
-Thumbs.db

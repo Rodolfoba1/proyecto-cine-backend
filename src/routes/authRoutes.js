@@ -1,14 +1,13 @@
-const express = require("express");
-const { login, registrarUsuario } = require("../controllers/authController");
-const verificarToken = require("../middlewares/authMiddleware");
-
+const express = require('express');
 const router = express.Router();
+const authController = require('../controllers/authController');
+const { verifyToken } = require('../middleware/authMiddleware');
 
-// Ruta para login y registro normal
-router.post("/login", login);
-router.post("/registro", registrarUsuario);
+// Rutas públicas
+router.post('/register', authController.register);
+router.post('/login', authController.login);
 
-// Ruta para registro de admin (protegida por el middleware)
-router.post("/registro-admin", verificarToken, registrarUsuario);
+// Rutas protegidas
+router.get('/profile', verifyToken, authController.getProfile);
 
 module.exports = router;
