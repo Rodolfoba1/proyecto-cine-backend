@@ -82,7 +82,7 @@ async function initDatabase() {
     // Crear usuario admin por defecto si no existe
     const [adminExists] = await tempConnection.query(
       'SELECT * FROM users WHERE email = ?',
-      ['admin@example.com']
+      ['admin@correo.com']
     );
 
     if (adminExists.length === 0) {
@@ -91,7 +91,7 @@ async function initDatabase() {
       
       await tempConnection.query(
         'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-        ['Admin User', 'admin@example.com', hashedPassword, 'admin']
+        ['admin', 'admin@correo.com', hashedPassword, 'admin']
       );
       
       console.log('Usuario administrador creado con éxito');
