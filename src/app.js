@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const { initDatabase } = require('./config/database');
-const { port } = require('./config/config');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 
 // Importar rutas
@@ -18,7 +17,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: process.env.CLIENT_URL || 'http://localhost:3000',
   credentials: true
 }));
 app.use(express.json());
@@ -42,7 +41,8 @@ app.get('/', (req, res) => {
 app.use(notFound);
 app.use(errorHandler);
 
-// Iniciar servidor
+// Iniciar servidor con el puerto proporcionado por Railway
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Servidor corriendo en el puerto ${port}`);
 });
