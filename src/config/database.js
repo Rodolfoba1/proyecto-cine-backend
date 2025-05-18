@@ -1,31 +1,34 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+// Railway proporciona estas variables de entorno para MySQL
+const dbConfig = {
+  host: process.env.MYSQLHOST || process.env.DB_HOST,
+  user: process.env.MYSQLUSER || process.env.DB_USER,
+  password: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD,
+  database: process.env.MYSQLDATABASE || process.env.DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
-});
+};
+
+const pool = mysql.createPool(dbConfig);
 
 // Función para inicializar la base de datos
 async function initDatabase() {
   try {
     // Crear conexión sin seleccionar base de datos
     const tempConnection = await mysql.createConnection({
-      host: process.env.DB_HOST,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD
+      host: dbConfig.host,
+      user: dbConfig.user,
+      password: dbConfig.password
     });
 
     // Crear base de datos si no existe
-    await tempConnection.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME}`);
+    await tempConnection.query(`CREATE DATABASE IF NOT EXISTS ${dbConfig.database}`);
     
     // Seleccionar la base de datos
-    await tempConnection.query(`USE ${process.env.DB_NAME}`);
+    await tempConnection.query(`USE ${dbConfig.database}`);
     
     // Crear tablas
     await tempConnection.query(`
