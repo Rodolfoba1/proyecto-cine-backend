@@ -1,27 +1,39 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
-// Railway proporciona estas variables de entorno para MySQL
+// Configuración unificada para MySQL (Railway y desarrollo)
 const dbConfig = {
-  host: process.env.MYSQLHOST || process.env.DB_HOST,
-  user: process.env.MYSQLUSER || process.env.DB_USER,
-  password: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD,
-  database: process.env.MYSQLDATABASE || process.env.DB_NAME,
+  host: process.env.MYSQLHOST || process.env.DB_HOST || 'localhost',
+  port: process.env.MYSQLPORT || process.env.DB_PORT || 3306,
+  user: process.env.MYSQLUSER || process.env.DB_USER || 'root',
+  password: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || '',
+  database: process.env.MYSQLDATABASE || process.env.DB_NAME || 'cinema_reservation_db',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
 };
+
+console.log('Intentando conectar a la base de datos con la siguiente configuración:');
+console.log({
+  host: dbConfig.host,
+  port: dbConfig.port,
+  user: dbConfig.user,
+  database: dbConfig.database,
+  // No mostramos la contraseña por seguridad
+});
 
 const pool = mysql.createPool(dbConfig);
 
 // Función para inicializar la base de datos
 async function initDatabase() {
   try {
-    // Crear conexión sin seleccionar base de datos
+    // Crear conexión temporal usando la configuración completa (excepto la base de datos)
     const tempConnection = await mysql.createConnection({
       host: dbConfig.host,
+      port: dbConfig.port,
       user: dbConfig.user,
-      password: dbConfig.password
+      password: dbConfig.password,
+      // No especificamos la base de datos aquí porque la crearemos si no existe
     });
 
     // Crear base de datos si no existe
@@ -35,8 +47,8 @@ async function initDatabase() {
       CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
-        email VARCHAR(100) NOT NULL UNIQUE,
-        password VARCHAR(255) NOT NULL,
+        email varchar(100) NOT NULL UNIQUE,
+        password varchar(255) NOT NULL,
         role ENUM('admin', 'client') DEFAULT 'client',
         active BOOLEAN DEFAULT TRUE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -102,12 +114,19 @@ async function initDatabase() {
 
     await tempConnection.end();
     console.log('Base de datos inicializada correctamente');
+    
+    // Verificar la conexión del pool
+    const connection = await pool.getConnection();
+    console.log('Pool de conexiones establecido correctamente');
+    connection.release();
+    
   } catch (error) {
     console.error('Error al inicializar la base de datos:', error);
-    process.exit(1);
+    throw error; // Lanzar el error para que sea capturado por el manejador en app.js
   }
 }
 
+// Exportar el pool y la función de inicialización
 module.exports = {
   pool,
   initDatabase

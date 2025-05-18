@@ -10,41 +10,64 @@ const userRoutes = require('./routes/userRoutes');
 const cinemaRoutes = require('./routes/cinemaRoutes');
 const reservationRoutes = require('./routes/reservationRoutes');
 
-// Inicializar la base de datos
-initDatabase();
-
-// Crear aplicación Express
 const app = express();
 
 // Middleware
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:3000',
-  credentials: true
+  credentials: true 
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Rutas
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/cinemas', cinemaRoutes);
-app.use('/api/reservations', reservationRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
   res.json({
     message: 'API de Sistema de Reservaciones de Cine',
-    status: 'online'
+    status: 'online',
+    env: {
+      NODE_ENV: process.env.NODE_ENV,
+      PORT: process.env.PORT,
+    }
   });
 });
 
-// Middleware de errores
-app.use(notFound);
-app.use(errorHandler);
+// Inicializar la base de datos antes de configurar las rutas
+initDatabase()
+  .then(() => {
+    // Rutas (configuradas solo después de inicializar la base de datos)
+    app.use('/api/auth', authRoutes);
+    app.use('/api/users', userRoutes);
+    app.use('/api/cinemas', cinemaRoutes);
+    app.use('/api/reservations', reservationRoutes);
 
-// Iniciar servidor
-app.listen(port, () => {
-  console.log(`Servidor corriendo en el puerto ${port}`);
-});
+    // Middleware de errores
+    app.use(notFound);
+    app.use(errorHandler);
+
+    // Iniciar servidor
+    app.listen(port, () => {
+      console.log(`Servidor corriendo en el puerto ${port}`);
+    });
+  })
+  .catch(error => {
+    console.error('Error fatal al inicializar la base de datos:', error);
+    // En producción,se podría querer reiniciar el contenedor aquí
+    // process.exit(1);
+    
+    // En su lugar, se configura una ruta de error para diagnóstico
+    app.get('*', (req, res) => {
+      res.status(500).json({
+        error: 'Error de conexión a la base de datos',
+        message: 'No se pudo inicializar la base de datos. Contacte al administrador.',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
+    });
+    
+    // Iniciar servidor en modo diagnóstico
+    app.listen(port, () => {
+      console.log(`Servidor en modo diagnóstico corriendo en el puerto ${port}`);
+    });
+  });
 
 module.exports = app;
