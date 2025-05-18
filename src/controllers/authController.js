@@ -67,8 +67,11 @@ exports.login = async (req, res) => {
     }
     
     // Verificar contraseña
-    const isPasswordValid = await userModel.verifyPassword(password, user.password);
-    
+    // Verificar contraseña
+    const isPasswordValid = await userModel.verifyPassword(password, user.password);  
+    console.log("¿Contraseña válida?:", isPasswordValid);
+    console.log("Contraseña en BD:", user.password);
+
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
