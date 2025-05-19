@@ -35,7 +35,7 @@ exports.register = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error en registro:', error);
+    console.error('Error en registro:', error.message);
     res.status(500).json({
       success: false,
       message: 'Error al registrar usuario'
@@ -105,7 +105,7 @@ exports.login = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error en login:', error);
+    console.error('Error en login:', error.message);
     res.status(500).json({
       success: false,
       message: 'Error al iniciar sesión'
