@@ -13,10 +13,22 @@ const reservationRoutes = require('./routes/reservationRoutes');
 const app = express();
 
 // Middleware
+const allowedOrigins = [
+  "https://proyecto-cine-frontend-production.up.railway.app",
+  "http://localhost:3000"
+];
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
-  credentials: true 
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("No permitido por CORS"));
+    }
+  },
+  credentials: true
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
